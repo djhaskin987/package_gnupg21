@@ -1,4 +1,12 @@
+# editor files
+.*.sw[a-z]
+*~
+\#*
+
+# build files
 *.tar.*
-libgpg-error*/
 gpg-homedir/
 installers/
+
+libassuan-*/
+libgpg-error*/
