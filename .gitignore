@@ -1,0 +1,4 @@
+*.tar.*
+libgpg-error*/
+gpg-homedir/
+installers/
