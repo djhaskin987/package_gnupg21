@@ -7,6 +7,9 @@
 *.tar.*
 gpg-homedir/
 installers/
+compile/
 
 libassuan-*/
 libgpg-error*/
+libksba*/
+npth*/

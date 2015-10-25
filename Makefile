@@ -2,62 +2,124 @@ PREFIX=/usr
 SYSCONFDIR=/etc
 SHAREDSTATEDIR=/com
 LOCALSTATEDIR=/var
-MAINTAINER=$(USER)@$(HOSTNAME)
+MAINTAINER=$(USER)@$(shell hostname)
 
 PACKAGE_URL=https://www.gnupg.org/
 
 RELEASE=1.djh987
 ARCH=amd64
+PKG_DIR=fpm_pkg
 
+COMPILE_ROOT=compile
+COMPILE_ROOT_DIR=$(PWD)/$(COMPILE_ROOT)
+COMPILE_LIB_DIR=$(COMPILE_ROOT_DIR)/usr/lib
+COMPILE_BIN_DIR=$(COMPILE_ROOT_DIR)/usr/bin
 
 GPGERROR_VERSION=1.20
 GPGERROR_NAME=libgpg-error
+GPGERROR_DIR=$(GPGERROR_NAME)-$(GPGERROR_VERSION)
+GPGERROR_TAR=$(GPGERROR_DIR).tar.gz
+GPGERROR_URL=ftp://ftp.gnupg.org/gcrypt/$(GPGERROR_NAME)/$(GPGERROR_TAR)
+GPGERROR_CONFIG=$(GPGERROR_DIR)/config.status
+GPGERROR_LIBRARY=$(COMPILE_LIB_DIR)/$(GPGERROR_NAME).so
+GPGERROR_INSTALLER=installers/$(GPGERROR_NAME)_$(GPGERROR_VERSION)-$(RELEASE)_$(ARCH).deb
+
+PINENTRY_VERSION=0.9.5
+PINENTRY_NAME=pinentry
+PINENTRY_DIR=$(PINENTRY_NAME)-$(PINENTRY_VERSION)
+PINENTRY_TAR=$(PINENTRY_DIR).tar.bz2
+PINENTRY_URL=ftp://ftp.gnupg.org/gcrypt/$(PINENTRY_NAME)/$(PINENTRY_TAR)
+PINENTRY_CONFIG=$(PINENTRY_DIR)/config.status
+PINENTRY_BINARY=$(COMPILE_BIN_DIR)/pinentry
+PINENTRY_INSTALLER=installers/$(PINENTRY_NAME)_$(PINENTRY_VERSION)-$(RELEASE)_$(ARCH).deb
+
+NPTH_VERSION=1.2
+NPTH_NAME=npth
+NPTH_DIR=$(NPTH_NAME)-$(NPTH_VERSION)
+NPTH_TAR=$(NPTH_DIR).tar.gz
+NPTH_URL=ftp://ftp.gnupg.org/gcrypt/$(NPTH_NAME)/$(NPTH_TAR)
+NPTH_CONFIG=$(NPTH_DIR)/config.status
+NPTH_LIBRARY=$(COMPILE_LIB_DIR)/lib$(NPTH_NAME).so
+NPTH_INSTALLER=installers/$(NPTH_NAME)_$(NPTH_VERSION)-$(RELEASE)_$(ARCH).deb
+
+KSBA_VERSION=1.3.3
+KSBA_NAME=libksba
+KSBA_DIR=$(KSBA_NAME)-$(KSBA_VERSION)
+KSBA_TAR=$(KSBA_DIR).tar.bz2
+KSBA_URL=ftp://ftp.gnupg.org/gcrypt/$(KSBA_NAME)/$(KSBA_TAR)
+KSBA_CONFIG=$(KSBA_DIR)/config.status
+KSBA_LIBRARY=$(COMPILE_LIB_DIR)/$(KSBA_NAME).so
+KSBA_INSTALLER=installers/$(KSBA_NAME)_$(KSBA_VERSION)-$(RELEASE)_$(ARCH).deb
 
 ASSUAN_NAME=libassuan
 ASSUAN_VERSION=2.3.0
+ASSUAN_DIR=$(ASSUAN_NAME)-$(ASSUAN_VERSION)
+ASSUAN_TAR=$(ASSUAN_DIR).tar.bz2
+ASSUAN_URL=ftp://ftp.gnupg.org/gcrypt/$(ASSUAN_NAME)/$(ASSUAN_TAR)
+ASSUAN_CONFIG=$(ASSUAN_DIR)/config.status
+ASSUAN_LIBRARY=$(COMPILE_LIB_DIR)/$(ASSUAN_NAME).so
+ASSUAN_INSTALLER=installers/$(ASSUAN_NAME)_$(ASSUAN_VERSION)-$(RELEASE)_$(ARCH).deb
+
+GCRYPT_NAME=libgcrypt
+GCRYPT_VERSION=1.6.4
+GCRYPT_DIR=$(GCRYPT_NAME)-$(GCRYPT_VERSION)
+GCRYPT_TAR=$(GCRYPT_DIR).tar.gz
+GCRYPT_URL=ftp://ftp.gnupg.org/gcrypt/$(GCRYPT_NAME)/$(GCRYPT_TAR)
+GCRYPT_CONFIG=$(GCRYPT_DIR)/config.status
+GCRYPT_LIBRARY=$(COMPILE_LIB_DIR)/$(GCRYPT_NAME).so
+GCRYPT_INSTALLER=installers/$(GCRYPT_NAME)_$(GCRYPT_VERSION)-$(RELEASE)_$(ARCH).deb
 
 GPG_HOMEDIR=gpg-homedir
 
-#install: all
-#	sudo dpkg -i installers/*.deb
-
 .PHONY: all clean install
-all: installers/$(GPGERROR_NAME)_$(GPGERROR_VERSION)-$(RELEASE)_$(ARCH).deb \
-	installers/$(ASSUAN_NAME)_$(ASSUAN_VERSION)-$(RELEASE)_$(ARCH).deb
+all: $(GPGERROR_INSTALLER) $(KSBA_INSTALLER) $(ASSUAN_INSTALLER) \
+	$(NTPH_INSTALLER)  $(GCRYPT_INSTALLER) $(PINENTRY_INSTALLER)
+
+install: all
+	sudo dpkg -i installers/*.deb
 
 clean:
 	rm -f *.tgz
 	rm -f *.tar.*
 	rm -f *.tar.*.sig
-	rm -f $(GPGERROR_NAME)-$(GPGERROR_VERSION)
-	rm -f $(GPG_HOMEDIR)
+	rm -rf $(GPGERROR_DIR)
+	rm -rf $(ASSUAN_DIR)
+	rm -rf $(GPG_HOMEDIR)
 	rm -rf installers
+	rm -rf $(COMPILE_ROOT_DIR)
 
 $(GPG_HOMEDIR)/pubring.gpg:
 	mkdir -p $(@D) && \
+	chmod -R go-rwx $(@D) && \
 	gpg --homedir $(@D) \
    		--keyserver keys.gnupg.net \
-		--recv-keys 0x4F25E3B6 0xE0856959 0x33BD3F06 0x7EFD60D9 0xF7E48EDB
+		--recv-keys 0x4F25E3B6 0xE0856959 0x33BD3F06 0x7EFD60D9 0xF7E48EDB && \
+	chmod -R go-rwx $(@D)
 
-$(GPGERROR_NAME)-$(GPGERROR_VERSION).tar.gz: $(GPG_HOMEDIR)/pubring.gpg
+$(GPGERROR_TAR): $(GPG_HOMEDIR)/pubring.gpg
 	curl -L -C - -o $@ \
 		ftp://ftp.gnupg.org/gcrypt/$(GPGERROR_NAME)/$@ && \
 	curl -L -C - -o $@.sig \
   		ftp://ftp.gnupg.org/gcrypt/$(GPGERROR_NAME)/$@.sig && \
 	gpg --homedir $(GPG_HOMEDIR) --verify $@.sig
 
-$(GPGERROR_NAME)-$(GPGERROR_VERSION)/config.status: $(GPGERROR_NAME)-$(GPGERROR_VERSION).tar.gz
+$(GPGERROR_CONFIG): $(GPGERROR_TAR)
 	rm -rf $(@D) && \
 	tar -xf $< && \
 	cd $(@D)/ && \
 	./configure --prefix=$(PREFIX) --sysconfdir=$(SYSCONFDIR) \
-	    --sharedstatedir=$(SHAREDSTATEDIR) --localstatedir=$(LOCALSTATEDIR)
+	    --sharedstatedir=$(SHAREDSTATEDIR) --localstatedir=$(LOCALSTATEDIR) \
+		--disable-rpath
 
-installers/$(GPGERROR_NAME)_$(GPGERROR_VERSION)-$(RELEASE)_$(ARCH).deb: $(GPGERROR_NAME)-$(GPGERROR_VERSION)/config.status
-	cd $(GPGERROR_NAME)-$(GPGERROR_VERSION)/ && \
-	mkdir -p fpm_pkg && \
-	$(MAKE) && \
-	make DESTDIR=$${PWD}/fpm_pkg install && \
+$(GPGERROR_LIBRARY): $(GPGERROR_CONFIG)
+	cd $(GPGERROR_DIR)/ && \
+	mkdir -p $(COMPILE_ROOT_DIR) && \
+	make DESTDIR=$(COMPILE_ROOT_DIR) install
+
+$(GPGERROR_INSTALLER): $(GPGERROR_CONFIG)
+	cd $(GPGERROR_DIR)/ && \
+	mkdir -p $(GPGERROR_DIR)/$(PKG_DIR) && \
+	make DESTDIR=$${PWD}/$(PKG_DIR) install && \
 	mkdir -p $(PWD)/$(@D) && \
 	rm -f $(PWD)/$@ && \
 	fpm -s dir -t deb \
@@ -69,28 +131,113 @@ installers/$(GPGERROR_NAME)_$(GPGERROR_VERSION)-$(RELEASE)_$(ARCH).deb: $(GPGERR
 	    --iteration $(RELEASE) \
 		--provides libgpg-error0 \
 		--maintainer $(MAINTAINER) \
-	    -C fpm_pkg
+	    -C $(GPGERROR_DIR)/$(PKG_DIR)
 
-$(ASSUAN_NAME)-$(ASSUAN_VERSION).tar.bz2: $(GPG_HOMEDIR)/pubring.gpg
+
+$(NPTH_TAR): $(GPG_HOMEDIR)/pubring.gpg
 	curl -L -C - -o $@ \
-		ftp://ftp.gnupg.org/gcrypt/$(ASSUAN_NAME)/$@ && \
+		ftp://ftp.gnupg.org/gcrypt/$(NPTH_NAME)/$@ && \
 	curl -L -C - -o $@.sig \
-  		ftp://ftp.gnupg.org/gcrypt/$(ASSUAN_NAME)/$@.sig && \
-	gpg --homedir $(GPG_HOMEDIR) --verify $@.sig && \
-	touch $@
+  		ftp://ftp.gnupg.org/gcrypt/$(NPTH_NAME)/$@.sig && \
+	gpg --homedir $(GPG_HOMEDIR) --verify $@.sig
 
-$(ASSUAN_NAME)-$(ASSUAN_VERSION)/config.status: $(ASSUAN_NAME)-$(ASSUAN_VERSION).tar.bz2
+$(NPTH_CONFIG): $(NPTH_TAR)
 	rm -rf $(@D) && \
 	tar -xf $< && \
 	cd $(@D)/ && \
 	./configure --prefix=$(PREFIX) --sysconfdir=$(SYSCONFDIR) \
-	    --sharedstatedir=$(SHAREDSTATEDIR) --localstatedir=$(LOCALSTATEDIR)
+	    --sharedstatedir=$(SHAREDSTATEDIR) --localstatedir=$(LOCALSTATEDIR) \
+		--disable-rpath
 
-installers/$(ASSUAN_NAME)_$(ASSUAN_VERSION)-$(RELEASE)_$(ARCH).deb: $(ASSUAN_NAME)-$(ASSUAN_VERSION)/config.status
-	cd $(ASSUAN_NAME)-$(ASSUAN_VERSION)/ && \
-	mkdir -p fpm_pkg && \
-	$(MAKE) && \
-	make DESTDIR=$${PWD}/fpm_pkg install && \
+$(NPTH_LIBRARY): $(NPTH_CONFIG)
+	cd $(NPTH_DIR)/ && \
+	mkdir -p $(COMPILE_ROOT_DIR) && \
+	make DESTDIR=$(COMPILE_ROOT_DIR) install
+
+$(NPTH_INSTALLER): $(NPTH_LIBRARY) $(NPTH_CONFIG)
+	cd $(NPTH_DIR)/ && \
+	mkdir -p $(NPTH_DIR)/$(PKG_DIR) && \
+	make DESTDIR=$${PWD}/$(PKG_DIR) install && \
+	mkdir -p $(PWD)/$(@D) && \
+	rm -f $(PWD)/$@ && \
+	fpm -s dir -t deb \
+	    -n $(NPTH_NAME) \
+		-a $(ARCH) \
+	    -v $(NPTH_VERSION) \
+		-p $(PWD)/$@ \
+		--url $(PACKAGE_URL) \
+	    --iteration $(RELEASE) \
+		--maintainer $(MAINTAINER) \
+	    -C $(NPTH_DIR)/$(PKG_DIR)
+
+$(KSBA_TAR): $(GPG_HOMEDIR)/pubring.gpg
+	curl -L -C - -o $@ \
+		ftp://ftp.gnupg.org/gcrypt/$(KSBA_NAME)/$@ && \
+	curl -L -C - -o $@.sig \
+  		ftp://ftp.gnupg.org/gcrypt/$(KSBA_NAME)/$@.sig && \
+	gpg --homedir $(GPG_HOMEDIR) --verify $@.sig
+
+$(KSBA_CONFIG): $(KSBA_TAR)
+	rm -rf $(@D) && \
+	tar -xf $< && \
+	cd $(@D)/ && \
+	./configure --prefix=$(PREFIX) --sysconfdir=$(SYSCONFDIR) \
+	    --sharedstatedir=$(SHAREDSTATEDIR) --localstatedir=$(LOCALSTATEDIR) \
+		--disable-rpath
+
+$(KSBA_LIBRARY): $(KSBA_CONFIG) $(GPGERROR_LIBRARY)
+	cd $(KSBA_DIR)/ && \
+	mkdir -p $(COMPILE_LIB_DIR) && \
+	$(MAKE) \
+		CPPFLAGS='-I$(COMPILE_INC_DIR)' \
+		CFLAGS='-L$(COMPILE_LIB_DIR)' && \
+	make DESTDIR=$(COMPILE_ROOT_DIR) install
+
+$(KSBA_INSTALLER): $(KSBA_LIBRARY) $(KSBA_CONFIG)
+	cd $(KSBA_DIR)/ && \
+	mkdir -p $(PKG_DIR) && \
+	make DESTDIR=$${PWD}/$(PKG_DIR) install  && \
+	mkdir -p $(PWD)/$(@D) && \
+	rm -f $(PWD)/$@ && \
+	fpm -s dir -t deb \
+	    -n $(KSBA_NAME) \
+		-a $(ARCH) \
+	    -v $(KSBA_VERSION) \
+		-p $(PWD)/$@ \
+		--url $(PACKAGE_URL) \
+	    --iteration $(RELEASE) \
+		--provides libksba8 \
+		--maintainer $(MAINTAINER) \
+		-d '$(GPGERROR_NAME) (>= $(GPGERROR_VERSION))' \
+	    -C $(PKG_DIR)
+
+$(ASSUAN_TAR): $(GPG_HOMEDIR)/pubring.gpg
+	curl -L -C - -o $@ \
+		ftp://ftp.gnupg.org/gcrypt/$(ASSUAN_NAME)/$@ && \
+	curl -L -C - -o $@.sig \
+  		ftp://ftp.gnupg.org/gcrypt/$(ASSUAN_NAME)/$@.sig && \
+	gpg --homedir $(GPG_HOMEDIR) --verify $@.sig
+
+$(ASSUAN_CONFIG): $(ASSUAN_TAR)
+	rm -rf $(@D) && \
+	tar -xf $< && \
+	cd $(@D)/ && \
+	./configure --prefix=$(PREFIX) --sysconfdir=$(SYSCONFDIR) \
+	    --sharedstatedir=$(SHAREDSTATEDIR) --localstatedir=$(LOCALSTATEDIR) \
+		--disable-rpath
+
+$(ASSUAN_LIBRARY): $(ASSUAN_CONFIG) $(GPGERROR_LIBRARY)
+	cd $(ASSUAN_DIR)/ && \
+	mkdir -p $(COMPILE_LIB_DIR) && \
+	$(MAKE) \
+		CPPFLAGS='-I$(COMPILE_INC_DIR)' \
+		CFLAGS='-L$(COMPILE_LIB_DIR)' && \
+	make DESTDIR=$(COMPILE_ROOT_DIR) install
+
+$(ASSUAN_INSTALLER): $(ASSUAN_LIBRARY) $(ASSUAN_CONFIG)
+	cd $(ASSUAN_DIR)/ && \
+	mkdir -p $(PKG_DIR) && \
+	make DESTDIR=$${PWD}/$(PKG_DIR) install  && \
 	mkdir -p $(PWD)/$(@D) && \
 	rm -f $(PWD)/$@ && \
 	fpm -s dir -t deb \
@@ -100,7 +247,87 @@ installers/$(ASSUAN_NAME)_$(ASSUAN_VERSION)-$(RELEASE)_$(ARCH).deb: $(ASSUAN_NAM
 		-p $(PWD)/$@ \
 		--url $(PACKAGE_URL) \
 	    --iteration $(RELEASE) \
-		--provides libassuan20 \
-		--depends '$(GPGERROR_NAME) (>= $(GPGERROR_VERSION))' \
+		--provides libgpg-error0 \
 		--maintainer $(MAINTAINER) \
-	    -C fpm_pkg
+	    -C $(PKG_DIR)
+
+$(GCRYPT_TAR): $(GPG_HOMEDIR)/pubring.gpg
+	curl -L -C - -o $@ \
+		ftp://ftp.gnupg.org/gcrypt/$(GCRYPT_NAME)/$@ && \
+	curl -L -C - -o $@.sig \
+  		ftp://ftp.gnupg.org/gcrypt/$(GCRYPT_NAME)/$@.sig && \
+	gpg --homedir $(GPG_HOMEDIR) --verify $@.sig
+
+$(GCRYPT_CONFIG): $(GCRYPT_TAR)
+	rm -rf $(@D) && \
+	tar -xf $< && \
+	cd $(@D)/ && \
+	./configure --prefix=$(PREFIX) --sysconfdir=$(SYSCONFDIR) \
+	    --sharedstatedir=$(SHAREDSTATEDIR) --localstatedir=$(LOCALSTATEDIR) \
+		--disable-rpath
+
+$(GCRYPT_LIBRARY): $(GCRYPT_CONFIG) $(GPGERROR_LIBRARY)
+	cd $(GCRYPT_DIR)/ && \
+	mkdir -p $(COMPILE_LIB_DIR) && \
+	$(MAKE) \
+		CPPFLAGS='-I$(COMPILE_INC_DIR)' \
+		CFLAGS='-L$(COMPILE_LIB_DIR)' && \
+	make DESTDIR=$(COMPILE_ROOT_DIR) install
+
+$(GCRYPT_INSTALLER): $(GCRYPT_LIBRARY) $(GCRYPT_CONFIG)
+	cd $(GCRYPT_DIR)/ && \
+	mkdir -p $(PKG_DIR) && \
+	make DESTDIR=$${PWD}/$(PKG_DIR) install  && \
+	mkdir -p $(PWD)/$(@D) && \
+	rm -f $(PWD)/$@ && \
+	fpm -s dir -t deb \
+	    -n $(GCRYPT_NAME) \
+		-a $(ARCH) \
+	    -v $(GCRYPT_VERSION) \
+		-p $(PWD)/$@ \
+		--url $(PACKAGE_URL) \
+	    --iteration $(RELEASE) \
+		--provides libgpgcrypt20 \
+		--maintainer $(MAINTAINER) \
+	    -C $(PKG_DIR)
+
+$(PINENTRY_TAR): $(GPG_HOMEDIR)/pubring.gpg
+	curl -L -C - -o $@ \
+		ftp://ftp.gnupg.org/gcrypt/$(PINENTRY_NAME)/$@ && \
+	curl -L -C - -o $@.sig \
+  		ftp://ftp.gnupg.org/gcrypt/$(PINENTRY_NAME)/$@.sig && \
+	gpg --homedir $(GPG_HOMEDIR) --verify $@.sig
+
+$(PINENTRY_CONFIG): $(PINENTRY_TAR)
+	rm -rf $(@D) && \
+	tar -xf $< && \
+	cd $(@D)/ && \
+	./configure --prefix=$(PREFIX) --sysconfdir=$(SYSCONFDIR) \
+	    --sharedstatedir=$(SHAREDSTATEDIR) --localstatedir=$(LOCALSTATEDIR) \
+		--enable-pinentry-curses --disable-pinentry-qt4 --enable-pinentry-tty \
+		--disable-rpath
+
+$(PINENTRY_BINARY): $(PINENTRY_CONFIG) $(ASSUAN_LIBRARY) $(GCRYPT_LIBRARY)
+	cd $(PINENTRY_DIR)/ && \
+	mkdir -p $(COMPILE_LIB_DIR) && \
+	$(MAKE) \
+		CPPFLAGS='-I$(COMPILE_INC_DIR)' \
+		CFLAGS='-L$(COMPILE_LIB_DIR)' && \
+	make DESTDIR=$(COMPILE_ROOT_DIR) install
+
+$(PINENTRY_INSTALLER): $(PINENTRY_BINARY) $(PINENTRY_CONFIG)
+	cd $(PINENTRY_DIR)/ && \
+	mkdir -p $(PKG_DIR) && \
+	make DESTDIR=$${PWD}/$(PKG_DIR) install  && \
+	mkdir -p $(PWD)/$(@D) && \
+	rm -f $(PWD)/$@ && \
+	fpm -s dir -t deb \
+	    -n $(PINENTRY_NAME) \
+		-a $(ARCH) \
+	    -v $(PINENTRY_VERSION) \
+		-p $(PWD)/$@ \
+		--url $(PACKAGE_URL) \
+	    --iteration $(RELEASE) \
+		--provides libgpg-error0 \
+		--maintainer $(MAINTAINER) \
+	    -C $(PKG_DIR)
