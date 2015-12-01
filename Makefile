@@ -391,5 +391,8 @@ $(GNUPG_INSTALLER): $(GNUPG_BINARY) $(GNUPG_CONFIG)
 		--url $(PACKAGE_URL) \
 	    --iteration $(RELEASE) \
 		--provides gpg2 \
+		--provides gnupg2 \
+		--provides gpgsm \
+		--provides gnupg-agent \
 		--maintainer $(MAINTAINER) \
 	    -C $(PKG_DIR)
