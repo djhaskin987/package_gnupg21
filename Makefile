@@ -76,7 +76,7 @@ all: $(GPGERROR_INSTALLER) $(KSBA_INSTALLER) $(ASSUAN_INSTALLER) \
 	$(NTPH_INSTALLER)  $(GCRYPT_INSTALLER) $(PINENTRY_INSTALLER)
 
 install: all
-	dpkg -i installers/*.deb
+	sudo dpkg -i installers/*.deb
 
 clean:
 	rm -f *.tgz
@@ -122,6 +122,7 @@ $(GPGERROR_INSTALLER): $(GPGERROR_CONFIG)
 	make DESTDIR=$${PWD}/$(PKG_DIR) install && \
 	mkdir -p $(PWD)/$(@D) && \
 	rm -f $(PWD)/$@ && \
+	find $(PKG_DIR) -depth -type d -empty -delete && \
 	fpm -s dir -t deb \
 	    -n $(GPGERROR_NAME) \
 		-a $(ARCH) \
@@ -131,7 +132,7 @@ $(GPGERROR_INSTALLER): $(GPGERROR_CONFIG)
 	    --iteration $(RELEASE) \
 		--provides libgpg-error0 \
 		--maintainer $(MAINTAINER) \
-	    -C $(GPGERROR_DIR)/$(PKG_DIR)
+	    -C $(PKG_DIR)
 
 
 $(NPTH_TAR): $(GPG_HOMEDIR)/pubring.gpg
@@ -160,6 +161,7 @@ $(NPTH_INSTALLER): $(NPTH_LIBRARY) $(NPTH_CONFIG)
 	make DESTDIR=$${PWD}/$(PKG_DIR) install && \
 	mkdir -p $(PWD)/$(@D) && \
 	rm -f $(PWD)/$@ && \
+	find $(PKG_DIR) -depth -type d -empty -delete && \
 	fpm -s dir -t deb \
 	    -n $(NPTH_NAME) \
 		-a $(ARCH) \
@@ -168,7 +170,7 @@ $(NPTH_INSTALLER): $(NPTH_LIBRARY) $(NPTH_CONFIG)
 		--url $(PACKAGE_URL) \
 	    --iteration $(RELEASE) \
 		--maintainer $(MAINTAINER) \
-	    -C $(NPTH_DIR)/$(PKG_DIR)
+	    -C $(PKG_DIR)
 
 $(KSBA_TAR): $(GPG_HOMEDIR)/pubring.gpg
 	curl -L -C - -o $@ \
@@ -196,6 +198,7 @@ $(KSBA_INSTALLER): $(KSBA_LIBRARY) $(KSBA_CONFIG)
 	make DESTDIR=$${PWD}/$(PKG_DIR) install  && \
 	mkdir -p $(PWD)/$(@D) && \
 	rm -f $(PWD)/$@ && \
+	find $(PKG_DIR) -depth -type d -empty -delete && \
 	fpm -s dir -t deb \
 	    -n $(KSBA_NAME) \
 		-a $(ARCH) \
@@ -234,6 +237,7 @@ $(ASSUAN_INSTALLER): $(ASSUAN_LIBRARY) $(ASSUAN_CONFIG)
 	make DESTDIR=$${PWD}/$(PKG_DIR) install  && \
 	mkdir -p $(PWD)/$(@D) && \
 	rm -f $(PWD)/$@ && \
+	find $(PKG_DIR) -depth -type d -empty -delete && \
 	fpm -s dir -t deb \
 	    -n $(ASSUAN_NAME) \
 		-a $(ARCH) \
@@ -271,6 +275,7 @@ $(GCRYPT_INSTALLER): $(GCRYPT_LIBRARY) $(GCRYPT_CONFIG)
 	make DESTDIR=$${PWD}/$(PKG_DIR) install  && \
 	mkdir -p $(PWD)/$(@D) && \
 	rm -f $(PWD)/$@ && \
+	find $(PKG_DIR) -depth -type d -empty -delete && \
 	fpm -s dir -t deb \
 	    -n $(GCRYPT_NAME) \
 		-a $(ARCH) \
@@ -279,6 +284,8 @@ $(GCRYPT_INSTALLER): $(GCRYPT_LIBRARY) $(GCRYPT_CONFIG)
 		--url $(PACKAGE_URL) \
 	    --iteration $(RELEASE) \
 		--provides libgpgcrypt20 \
+		--obsoletes libgcrypt11-dev \
+		--provides libgcrypt16-dev \
 		--maintainer $(MAINTAINER) \
 	    -C $(PKG_DIR)
 
@@ -309,6 +316,7 @@ $(PINENTRY_INSTALLER): $(PINENTRY_BINARY) $(PINENTRY_CONFIG)
 	make DESTDIR=$${PWD}/$(PKG_DIR) install  && \
 	mkdir -p $(PWD)/$(@D) && \
 	rm -f $(PWD)/$@ && \
+	find $(PKG_DIR) -depth -type d -empty -delete && \
 	fpm -s dir -t deb \
 	    -n $(PINENTRY_NAME) \
 		-a $(ARCH) \
@@ -316,6 +324,7 @@ $(PINENTRY_INSTALLER): $(PINENTRY_BINARY) $(PINENTRY_CONFIG)
 		-p $(PWD)/$@ \
 		--url $(PACKAGE_URL) \
 	    --iteration $(RELEASE) \
-		--provides libgpg-error0 \
+		--provides pinentry-qt4 \
+		--provides pinentry-gtk2 \
 		--maintainer $(MAINTAINER) \
 	    -C $(PKG_DIR)
