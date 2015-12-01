@@ -123,6 +123,7 @@ $(GPGERROR_INSTALLER): $(GPGERROR_CONFIG)
 	mkdir -p $(PWD)/$(@D) && \
 	rm -f $(PWD)/$@ && \
 	find $(PKG_DIR) -depth -type d -empty -delete && \
+    rm -rf $(PKG_DIR)/usr/share/info/dir && \
 	fpm -s dir -t deb \
 	    -n $(GPGERROR_NAME) \
 		-a $(ARCH) \
@@ -131,6 +132,7 @@ $(GPGERROR_INSTALLER): $(GPGERROR_CONFIG)
 		--url $(PACKAGE_URL) \
 	    --iteration $(RELEASE) \
 		--provides libgpg-error0 \
+		--provides libgpg-error-dev \
 		--maintainer $(MAINTAINER) \
 	    -C $(PKG_DIR)
 
@@ -162,6 +164,7 @@ $(NPTH_INSTALLER): $(NPTH_LIBRARY) $(NPTH_CONFIG)
 	mkdir -p $(PWD)/$(@D) && \
 	rm -f $(PWD)/$@ && \
 	find $(PKG_DIR) -depth -type d -empty -delete && \
+    rm -rf $(PKG_DIR)/usr/share/info/dir && \
 	fpm -s dir -t deb \
 	    -n $(NPTH_NAME) \
 		-a $(ARCH) \
@@ -199,6 +202,7 @@ $(KSBA_INSTALLER): $(KSBA_LIBRARY) $(KSBA_CONFIG)
 	mkdir -p $(PWD)/$(@D) && \
 	rm -f $(PWD)/$@ && \
 	find $(PKG_DIR) -depth -type d -empty -delete && \
+    rm -rf $(PKG_DIR)/usr/share/info/dir && \
 	fpm -s dir -t deb \
 	    -n $(KSBA_NAME) \
 		-a $(ARCH) \
@@ -238,6 +242,7 @@ $(ASSUAN_INSTALLER): $(ASSUAN_LIBRARY) $(ASSUAN_CONFIG)
 	mkdir -p $(PWD)/$(@D) && \
 	rm -f $(PWD)/$@ && \
 	find $(PKG_DIR) -depth -type d -empty -delete && \
+    rm -rf $(PKG_DIR)/usr/share/info/dir && \
 	fpm -s dir -t deb \
 	    -n $(ASSUAN_NAME) \
 		-a $(ARCH) \
@@ -276,6 +281,7 @@ $(GCRYPT_INSTALLER): $(GCRYPT_LIBRARY) $(GCRYPT_CONFIG)
 	mkdir -p $(PWD)/$(@D) && \
 	rm -f $(PWD)/$@ && \
 	find $(PKG_DIR) -depth -type d -empty -delete && \
+    rm -rf $(PKG_DIR)/usr/share/info/dir && \
 	fpm -s dir -t deb \
 	    -n $(GCRYPT_NAME) \
 		-a $(ARCH) \
@@ -284,7 +290,7 @@ $(GCRYPT_INSTALLER): $(GCRYPT_LIBRARY) $(GCRYPT_CONFIG)
 		--url $(PACKAGE_URL) \
 	    --iteration $(RELEASE) \
 		--provides libgpgcrypt20 \
-		--obsoletes libgcrypt11-dev \
+		--replaces libgcrypt11-dev \
 		--provides libgcrypt16-dev \
 		--maintainer $(MAINTAINER) \
 	    -C $(PKG_DIR)
@@ -317,6 +323,7 @@ $(PINENTRY_INSTALLER): $(PINENTRY_BINARY) $(PINENTRY_CONFIG)
 	mkdir -p $(PWD)/$(@D) && \
 	rm -f $(PWD)/$@ && \
 	find $(PKG_DIR) -depth -type d -empty -delete && \
+    rm -rf $(PKG_DIR)/usr/share/info/dir && \
 	fpm -s dir -t deb \
 	    -n $(PINENTRY_NAME) \
 		-a $(ARCH) \
