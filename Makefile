@@ -36,7 +36,7 @@ PINENTRY_INSTALLER=installers/$(PINENTRY_NAME)_$(PINENTRY_VERSION)-$(RELEASE)_$(
 NPTH_VERSION=1.2
 NPTH_NAME=npth
 NPTH_DIR=$(NPTH_NAME)-$(NPTH_VERSION)
-NPTH_TAR=$(NPTH_DIR).tar.gz
+NPTH_TAR=$(NPTH_DIR).tar.bz2
 NPTH_URL=ftp://ftp.gnupg.org/gcrypt/$(NPTH_NAME)/$(NPTH_TAR)
 NPTH_CONFIG=$(NPTH_DIR)/config.status
 NPTH_LIBRARY=$(COMPILE_LIB_DIR)/lib$(NPTH_NAME).so
@@ -69,11 +69,21 @@ GCRYPT_CONFIG=$(GCRYPT_DIR)/config.status
 GCRYPT_LIBRARY=$(COMPILE_LIB_DIR)/$(GCRYPT_NAME).so
 GCRYPT_INSTALLER=installers/$(GCRYPT_NAME)_$(GCRYPT_VERSION)-$(RELEASE)_$(ARCH).deb
 
+GNUPG_NAME=gnupg
+GNUPG_VERSION=2.1.9
+GNUPG_DIR=$(GNUPG_NAME)-$(GNUPG_VERSION)
+GNUPG_TAR=$(GNUPG_DIR).tar.bz2
+GNUPG_URL=ftp://ftp.gnupg.org/gcrypt/$(GNUPG_NAME)/$(GNUPG_TAR)
+GNUPG_CONFIG=$(GNUPG_DIR)/config.status
+GNUPG_BINARY=$(COMPILE_BIN_DIR)/gpg2
+GNUPG_INSTALLER=installers/$(GNUPG_NAME)_$(GNUPG_VERSION)-$(RELEASE)_$(ARCH).deb
+
 GPG_HOMEDIR=gpg-homedir
 
 .PHONY: all clean install
 all: $(GPGERROR_INSTALLER) $(KSBA_INSTALLER) $(ASSUAN_INSTALLER) \
-	$(NTPH_INSTALLER)  $(GCRYPT_INSTALLER) $(PINENTRY_INSTALLER)
+	$(NTPH_INSTALLER) $(GCRYPT_INSTALLER) $(PINENTRY_INSTALLER) \
+	$(GNUPG_INSTALLER)
 
 install: all
 	sudo dpkg -i installers/*.deb
@@ -107,6 +117,7 @@ $(GPGERROR_CONFIG): $(GPGERROR_TAR)
 	rm -rf $(@D) && \
 	tar -xf $< && \
 	cd $(@D)/ && \
+	export PKG_CONFIG_SYSROOT_DIR=$(COMPILE_ROOT_DIR) && \
 	./configure --prefix=$(PREFIX) --sysconfdir=$(SYSCONFDIR) \
 	    --sharedstatedir=$(SHAREDSTATEDIR) --localstatedir=$(LOCALSTATEDIR) \
 		--with-sysroot=$(COMPILE_ROOT_DIR)
@@ -148,6 +159,7 @@ $(NPTH_CONFIG): $(NPTH_TAR)
 	rm -rf $(@D) && \
 	tar -xf $< && \
 	cd $(@D)/ && \
+	export PKG_CONFIG_SYSROOT_DIR=$(COMPILE_ROOT_DIR) && \
 	./configure --prefix=$(PREFIX) --sysconfdir=$(SYSCONFDIR) \
 	    --sharedstatedir=$(SHAREDSTATEDIR) --localstatedir=$(LOCALSTATEDIR) \
 		--with-sysroot=$(COMPILE_ROOT_DIR)
@@ -186,6 +198,7 @@ $(KSBA_CONFIG): $(KSBA_TAR)
 	rm -rf $(@D) && \
 	tar -xf $< && \
 	cd $(@D)/ && \
+	export PKG_CONFIG_SYSROOT_DIR=$(COMPILE_ROOT_DIR) && \
 	./configure --prefix=$(PREFIX) --sysconfdir=$(SYSCONFDIR) \
 	    --sharedstatedir=$(SHAREDSTATEDIR) --localstatedir=$(LOCALSTATEDIR) \
 		--with-sysroot=$(COMPILE_ROOT_DIR)
@@ -226,6 +239,7 @@ $(ASSUAN_CONFIG): $(ASSUAN_TAR)
 	rm -rf $(@D) && \
 	tar -xf $< && \
 	cd $(@D)/ && \
+	export PKG_CONFIG_SYSROOT_DIR=$(COMPILE_ROOT_DIR) && \
 	./configure --prefix=$(PREFIX) --sysconfdir=$(SYSCONFDIR) \
 	    --sharedstatedir=$(SHAREDSTATEDIR) --localstatedir=$(LOCALSTATEDIR) \
 		--with-sysroot=$(COMPILE_ROOT_DIR)
@@ -265,6 +279,7 @@ $(GCRYPT_CONFIG): $(GCRYPT_TAR)
 	rm -rf $(@D) && \
 	tar -xf $< && \
 	cd $(@D)/ && \
+	export PKG_CONFIG_SYSROOT_DIR=$(COMPILE_ROOT_DIR) && \
 	./configure --prefix=$(PREFIX) --sysconfdir=$(SYSCONFDIR) \
 	    --sharedstatedir=$(SHAREDSTATEDIR) --localstatedir=$(LOCALSTATEDIR) \
 		--with-sysroot=$(COMPILE_ROOT_DIR)
@@ -306,6 +321,7 @@ $(PINENTRY_CONFIG): $(PINENTRY_TAR)
 	rm -rf $(@D) && \
 	tar -xf $< && \
 	cd $(@D)/ && \
+	export PKG_CONFIG_SYSROOT_DIR=$(COMPILE_ROOT_DIR) && \
 	./configure --prefix=$(PREFIX) --sysconfdir=$(SYSCONFDIR) \
 	    --sharedstatedir=$(SHAREDSTATEDIR) --localstatedir=$(LOCALSTATEDIR) \
 		--enable-pinentry-curses --disable-pinentry-qt4 --enable-pinentry-tty \
@@ -333,5 +349,47 @@ $(PINENTRY_INSTALLER): $(PINENTRY_BINARY) $(PINENTRY_CONFIG)
 	    --iteration $(RELEASE) \
 		--provides pinentry-qt4 \
 		--provides pinentry-gtk2 \
+		--maintainer $(MAINTAINER) \
+	    -C $(PKG_DIR)
+
+
+$(GNUPG_TAR): $(GPG_HOMEDIR)/pubring.gpg
+	curl -L -C - -o $@ \
+		ftp://ftp.gnupg.org/gcrypt/$(GNUPG_NAME)/$@ && \
+	curl -L -C - -o $@.sig \
+  		ftp://ftp.gnupg.org/gcrypt/$(GNUPG_NAME)/$@.sig && \
+	gpg --homedir $(GPG_HOMEDIR) --verify $@.sig
+
+$(GNUPG_CONFIG): $(GNUPG_TAR) $(NPTH_LIBRARY)
+	rm -rf $(@D) && \
+	tar -xf $< && \
+	cd $(@D)/ && \
+	export PKG_CONFIG_SYSROOT_DIR=$(COMPILE_ROOT_DIR) && \
+	./configure --prefix=$(PREFIX) --sysconfdir=$(SYSCONFDIR) \
+	    --sharedstatedir=$(SHAREDSTATEDIR) --localstatedir=$(LOCALSTATEDIR) \
+		--with-sysroot=$(COMPILE_ROOT_DIR)
+
+$(GNUPG_BINARY): $(GNUPG_CONFIG) $(ASSUAN_LIBRARY) $(GCRYPT_LIBRARY) $(GPGERROR_LIBRARY) \
+	$(KSBA_LIBRARY) $(NPTH_LIBRARY)
+	cd $(GNUPG_DIR)/ && \
+	$(MAKE) && \
+	make DESTDIR=$(COMPILE_ROOT_DIR) install
+
+$(GNUPG_INSTALLER): $(GNUPG_BINARY) $(GNUPG_CONFIG)
+	cd $(GNUPG_DIR)/ && \
+	mkdir -p $(PKG_DIR) && \
+	make DESTDIR=$${PWD}/$(PKG_DIR) install  && \
+	mkdir -p $(PWD)/$(@D) && \
+	rm -f $(PWD)/$@ && \
+	find $(PKG_DIR) -depth -type d -empty -delete && \
+    rm -rf $(PKG_DIR)/usr/share/info/dir && \
+	fpm -s dir -t deb \
+	    -n $(GNUPG_NAME) \
+		-a $(ARCH) \
+	    -v $(GNUPG_VERSION) \
+		-p $(PWD)/$@ \
+		--url $(PACKAGE_URL) \
+	    --iteration $(RELEASE) \
+		--provides gpg2 \
 		--maintainer $(MAINTAINER) \
 	    -C $(PKG_DIR)
