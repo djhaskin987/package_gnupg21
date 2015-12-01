@@ -109,7 +109,7 @@ $(GPGERROR_CONFIG): $(GPGERROR_TAR)
 	cd $(@D)/ && \
 	./configure --prefix=$(PREFIX) --sysconfdir=$(SYSCONFDIR) \
 	    --sharedstatedir=$(SHAREDSTATEDIR) --localstatedir=$(LOCALSTATEDIR) \
-		--disable-rpath
+		--with-sysroot=$(COMPILE_ROOT_DIR)
 
 $(GPGERROR_LIBRARY): $(GPGERROR_CONFIG)
 	cd $(GPGERROR_DIR)/ && \
@@ -147,7 +147,7 @@ $(NPTH_CONFIG): $(NPTH_TAR)
 	cd $(@D)/ && \
 	./configure --prefix=$(PREFIX) --sysconfdir=$(SYSCONFDIR) \
 	    --sharedstatedir=$(SHAREDSTATEDIR) --localstatedir=$(LOCALSTATEDIR) \
-		--disable-rpath
+		--with-sysroot=$(COMPILE_ROOT_DIR)
 
 $(NPTH_LIBRARY): $(NPTH_CONFIG)
 	cd $(NPTH_DIR)/ && \
@@ -183,7 +183,7 @@ $(KSBA_CONFIG): $(KSBA_TAR)
 	cd $(@D)/ && \
 	./configure --prefix=$(PREFIX) --sysconfdir=$(SYSCONFDIR) \
 	    --sharedstatedir=$(SHAREDSTATEDIR) --localstatedir=$(LOCALSTATEDIR) \
-		--disable-rpath
+		--with-sysroot=$(COMPILE_ROOT_DIR)
 
 $(KSBA_LIBRARY): $(KSBA_CONFIG) $(GPGERROR_LIBRARY)
 	cd $(KSBA_DIR)/ && \
@@ -224,7 +224,7 @@ $(ASSUAN_CONFIG): $(ASSUAN_TAR)
 	cd $(@D)/ && \
 	./configure --prefix=$(PREFIX) --sysconfdir=$(SYSCONFDIR) \
 	    --sharedstatedir=$(SHAREDSTATEDIR) --localstatedir=$(LOCALSTATEDIR) \
-		--disable-rpath
+		--with-sysroot=$(COMPILE_ROOT_DIR)
 
 $(ASSUAN_LIBRARY): $(ASSUAN_CONFIG) $(GPGERROR_LIBRARY)
 	cd $(ASSUAN_DIR)/ && \
@@ -264,7 +264,7 @@ $(GCRYPT_CONFIG): $(GCRYPT_TAR)
 	cd $(@D)/ && \
 	./configure --prefix=$(PREFIX) --sysconfdir=$(SYSCONFDIR) \
 	    --sharedstatedir=$(SHAREDSTATEDIR) --localstatedir=$(LOCALSTATEDIR) \
-		--disable-rpath
+		--with-sysroot=$(COMPILE_ROOT_DIR)
 
 $(GCRYPT_LIBRARY): $(GCRYPT_CONFIG) $(GPGERROR_LIBRARY)
 	cd $(GCRYPT_DIR)/ && \
@@ -305,7 +305,7 @@ $(PINENTRY_CONFIG): $(PINENTRY_TAR)
 	./configure --prefix=$(PREFIX) --sysconfdir=$(SYSCONFDIR) \
 	    --sharedstatedir=$(SHAREDSTATEDIR) --localstatedir=$(LOCALSTATEDIR) \
 		--enable-pinentry-curses --disable-pinentry-qt4 --enable-pinentry-tty \
-		--disable-rpath
+		--with-sysroot=$(COMPILE_ROOT_DIR)
 
 $(PINENTRY_BINARY): $(PINENTRY_CONFIG) $(ASSUAN_LIBRARY) $(GCRYPT_LIBRARY)
 	cd $(PINENTRY_DIR)/ && \
