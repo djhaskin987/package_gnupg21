@@ -70,13 +70,14 @@ GCRYPT_LIBRARY=$(COMPILE_LIB_DIR)/$(GCRYPT_NAME).so
 GCRYPT_INSTALLER=installers/$(GCRYPT_NAME)_$(GCRYPT_VERSION)-$(RELEASE)_$(ARCH).deb
 
 GNUPG_NAME=gnupg
+GNUPG_PACKAGE_NAME=gnupg2
 GNUPG_VERSION=2.1.9
 GNUPG_DIR=$(GNUPG_NAME)-$(GNUPG_VERSION)
 GNUPG_TAR=$(GNUPG_DIR).tar.bz2
 GNUPG_URL=ftp://ftp.gnupg.org/gcrypt/$(GNUPG_NAME)/$(GNUPG_TAR)
 GNUPG_CONFIG=$(GNUPG_DIR)/config.status
 GNUPG_BINARY=$(COMPILE_BIN_DIR)/gpg2
-GNUPG_INSTALLER=installers/$(GNUPG_NAME)_$(GNUPG_VERSION)-$(RELEASE)_$(ARCH).deb
+GNUPG_INSTALLER=installers/$(GNUPG_PACKAGE_NAME)_$(GNUPG_VERSION)-$(RELEASE)_$(ARCH).deb
 
 GPG_HOMEDIR=gpg-homedir
 
@@ -383,8 +384,9 @@ $(GNUPG_INSTALLER): $(GNUPG_BINARY) $(GNUPG_CONFIG)
 	rm -f $(PWD)/$@ && \
 	find $(PKG_DIR) -depth -type d -empty -delete && \
     rm -rf $(PKG_DIR)/usr/share/info/dir && \
+	find $(PKG_DIR)/usr/share/doc -depth -name $(GNUPG_NAME) -execdir mv $(GNUPG_NAME) $(GNUPG_PACKAGE_NAME) \; && \
 	fpm -s dir -t deb \
-	    -n $(GNUPG_NAME) \
+	    -n $(GNUPG_PACKAGE_NAME) \
 		-a $(ARCH) \
 	    -v $(GNUPG_VERSION) \
 		-p $(PWD)/$@ \
