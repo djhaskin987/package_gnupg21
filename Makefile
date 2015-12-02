@@ -6,7 +6,7 @@ MAINTAINER=$(USER)@$(shell hostname)
 
 PACKAGE_URL=https://www.gnupg.org/
 
-RELEASE=1.djh987
+RELEASE=2.djh987
 ARCH=amd64
 PKG_DIR=fpm_pkg
 
@@ -118,7 +118,6 @@ $(GPGERROR_CONFIG): $(GPGERROR_TAR)
 	rm -rf $(@D) && \
 	tar -xf $< && \
 	cd $(@D)/ && \
-	export PKG_CONFIG_SYSROOT_DIR=$(COMPILE_ROOT_DIR) && \
 	./configure --prefix=$(PREFIX) --sysconfdir=$(SYSCONFDIR) \
 	    --sharedstatedir=$(SHAREDSTATEDIR) --localstatedir=$(LOCALSTATEDIR) \
 		--with-sysroot=$(COMPILE_ROOT_DIR)
@@ -160,7 +159,6 @@ $(NPTH_CONFIG): $(NPTH_TAR)
 	rm -rf $(@D) && \
 	tar -xf $< && \
 	cd $(@D)/ && \
-	export PKG_CONFIG_SYSROOT_DIR=$(COMPILE_ROOT_DIR) && \
 	./configure --prefix=$(PREFIX) --sysconfdir=$(SYSCONFDIR) \
 	    --sharedstatedir=$(SHAREDSTATEDIR) --localstatedir=$(LOCALSTATEDIR) \
 		--with-sysroot=$(COMPILE_ROOT_DIR)
@@ -199,7 +197,6 @@ $(KSBA_CONFIG): $(KSBA_TAR)
 	rm -rf $(@D) && \
 	tar -xf $< && \
 	cd $(@D)/ && \
-	export PKG_CONFIG_SYSROOT_DIR=$(COMPILE_ROOT_DIR) && \
 	./configure --prefix=$(PREFIX) --sysconfdir=$(SYSCONFDIR) \
 	    --sharedstatedir=$(SHAREDSTATEDIR) --localstatedir=$(LOCALSTATEDIR) \
 		--with-sysroot=$(COMPILE_ROOT_DIR)
@@ -240,7 +237,6 @@ $(ASSUAN_CONFIG): $(ASSUAN_TAR)
 	rm -rf $(@D) && \
 	tar -xf $< && \
 	cd $(@D)/ && \
-	export PKG_CONFIG_SYSROOT_DIR=$(COMPILE_ROOT_DIR) && \
 	./configure --prefix=$(PREFIX) --sysconfdir=$(SYSCONFDIR) \
 	    --sharedstatedir=$(SHAREDSTATEDIR) --localstatedir=$(LOCALSTATEDIR) \
 		--with-sysroot=$(COMPILE_ROOT_DIR)
@@ -280,7 +276,6 @@ $(GCRYPT_CONFIG): $(GCRYPT_TAR)
 	rm -rf $(@D) && \
 	tar -xf $< && \
 	cd $(@D)/ && \
-	export PKG_CONFIG_SYSROOT_DIR=$(COMPILE_ROOT_DIR) && \
 	./configure --prefix=$(PREFIX) --sysconfdir=$(SYSCONFDIR) \
 	    --sharedstatedir=$(SHAREDSTATEDIR) --localstatedir=$(LOCALSTATEDIR) \
 		--with-sysroot=$(COMPILE_ROOT_DIR)
@@ -322,7 +317,6 @@ $(PINENTRY_CONFIG): $(PINENTRY_TAR)
 	rm -rf $(@D) && \
 	tar -xf $< && \
 	cd $(@D)/ && \
-	export PKG_CONFIG_SYSROOT_DIR=$(COMPILE_ROOT_DIR) && \
 	./configure --prefix=$(PREFIX) --sysconfdir=$(SYSCONFDIR) \
 	    --sharedstatedir=$(SHAREDSTATEDIR) --localstatedir=$(LOCALSTATEDIR) \
 		--enable-pinentry-curses --disable-pinentry-qt4 --enable-pinentry-tty \
@@ -353,7 +347,6 @@ $(PINENTRY_INSTALLER): $(PINENTRY_BINARY) $(PINENTRY_CONFIG)
 		--maintainer $(MAINTAINER) \
 	    -C $(PKG_DIR)
 
-
 $(GNUPG_TAR): $(GPG_HOMEDIR)/pubring.gpg
 	curl -L -C - -o $@ \
 		ftp://ftp.gnupg.org/gcrypt/$(GNUPG_NAME)/$@ && \
@@ -365,7 +358,6 @@ $(GNUPG_CONFIG): $(GNUPG_TAR) $(NPTH_LIBRARY)
 	rm -rf $(@D) && \
 	tar -xf $< && \
 	cd $(@D)/ && \
-	export PKG_CONFIG_SYSROOT_DIR=$(COMPILE_ROOT_DIR) && \
 	./configure --prefix=$(PREFIX) --sysconfdir=$(SYSCONFDIR) \
 	    --sharedstatedir=$(SHAREDSTATEDIR) --localstatedir=$(LOCALSTATEDIR) \
 		--with-sysroot=$(COMPILE_ROOT_DIR)
